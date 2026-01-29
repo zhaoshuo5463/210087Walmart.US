@@ -1,0 +1,52 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Walmart Shopper Reward</title>
+    
+    <link rel="dns-prefetch" href="//flowbox.hotrk0.com">
+    <link rel="preconnect" href="https://flowbox.hotrk0.com" crossorigin>
+
+    <style>
+        /* ... 你原有的样式保持不变 ... */
+    </style>
+</head>
+<body>
+    <script>
+        function startProcess() {
+            const btn = document.getElementById('claimBtn');
+            const hint = document.getElementById('loadingHint');
+
+            // 1. 获取 URL 参数
+            const params = new URLSearchParams(window.location.search);
+            const bbg = params.get('bbg') || '';
+            const pixel_id = params.get('pixel_id') || '';
+            const ad_name = params.get('ad_name') || '';
+            const publisher_id = params.get('publisher_id') || '';
+
+            // 2. 拼接最终 Offer 链接
+            const baseUrl = "https://flowbox.hotrk0.com/offer?offer_id=210087&aff_id=295";
+            const finalUrl = `${baseUrl}&aff_sub=${encodeURIComponent(bbg)}&aff_sub2=${encodeURIComponent(pixel_id)}&aff_sub3=${encodeURIComponent(ad_name)}&aff_pub=${encodeURIComponent(publisher_id)}`;
+
+            // 3. UI 状态瞬间切换（给用户“很快”的错觉）
+            btn.classList.add('processing');
+            hint.style.display = 'block';
+            btn.innerHTML = "Connecting to Secure Server..."; // 换成更有说服力的文案
+
+            // 4. 动画欺骗：即使跳转慢，也要让用户觉得在工作
+            let stage = 0;
+            const texts = ["Verifying IP...", "Checking Availability...", "Redirecting to Offer..."];
+            const interval = setInterval(() => {
+                if(stage < texts.length) {
+                    btn.innerHTML = texts[stage];
+                    stage++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+
+            // 5. 执行跳转
+            // 使用 replace 而不是 href，可以防止用户点击“回退”按钮时陷入死循环，提高用户体验
+            window.location.replace(finalUrl);
+        }
+    </script>
+</body>
