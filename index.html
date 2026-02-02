@@ -17,13 +17,12 @@
         .text-info { font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.4; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
         .claim-btn { display: block; width: 100%; background: linear-gradient(180deg, #ffc220 0%, #fdb900 100%); color: #000; font-weight: bold; font-size: 20px; padding: 16px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 4px 0 #b38400; animation: pulse 1.5s infinite ease-in-out; transition: all 0.2s ease; outline: none; }
-        .claim-btn.processing { background: #e0e0e0 !important; color: #777 !important; box-shadow: none !important; transform: translateY(2px); animation: none !important; cursor: not-allowed; }
-        .loading-hint { display: none; font-size: 12px; color: #999; margin-top: 10px; }
+        .claim-btn:active { transform: translateY(2px); box-shadow: none; }
+        .loading-hint { display: none; font-size: 12px; color: #0071ce; margin-top: 10px; font-weight: bold; }
         .footer { font-size: 10px; color: #ccc; margin-top: 20px; padding-bottom: 10px; }
     </style>
 </head>
 <body>
-
     <div class="lp-container">
         <div class="header">
             <h1>Walmart Shopper Reward</h1>
@@ -40,7 +39,7 @@
             </p>
 
             <button class="claim-btn" id="claimBtn" onclick="startProcess()">CLAIM NOW</button>
-            <p id="loadingHint" class="loading-hint">Processing request, please do not close...</p>
+            <p id="loadingHint" class="loading-hint">Redirecting to Secure Server...</p>
         </div>
 
         <div class="footer">
@@ -49,38 +48,33 @@
     </div>
 
     <script>
-    function startProcess() {
-        const btn = document.getElementById('claimBtn');
-        const hint = document.getElementById('loadingHint');
+        function startProcess() {
+            const btn = document.getElementById('claimBtn');
+            const hint = document.getElementById('loadingHint');
 
-        // 1. 立即改变 UI 状态（给用户反馈，防止重复点击）
-        btn.classList.add('processing');
-        btn.disabled = true; 
-        btn.innerHTML = "Redirecting...";
-        hint.style.display = 'block';
+            // 1. 立即获取参数并构建链接，不设任何等待
+            const params = new URLSearchParams(window.location.search);
+            const baseUrl = "https://flowbox.hotrk0.com/offer?offer_id=210087&aff_id=295";
+            const finalUrl = baseUrl + 
+                "&aff_sub=" + encodeURIComponent(params.get('bbg') || '') + 
+                "&aff_sub2=" + encodeURIComponent(params.get('pixel_id') || '') + 
+                "&aff_sub3=" + encodeURIComponent(params.get('ad_name') || '') + 
+                "&aff_pub=" + encodeURIComponent(params.get('publisher_id') || '');
 
-        // 2. 获取参数
-        const params = new URLSearchParams(window.location.search);
-        const bbg = params.get('bbg') || '';
-        const pixel_id = params.get('pixel_id') || '';
-        const ad_name = params.get('ad_name') || '';
-        const publisher_id = params.get('publisher_id') || '';
+            // 2. 瞬间改变 UI 状态
+            btn.innerHTML = "Processing...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+            hint.style.display = 'block';
 
-        // 3. 拼接最终链接
-        const baseUrl = "https://flowbox.hotrk0.com/offer?offer_id=210087&aff_id=295";
-        const finalUrl = baseUrl + 
-            "&aff_sub=" + encodeURIComponent(bbg) + 
-            "&aff_sub2=" + encodeURIComponent(pixel_id) + 
-            "&aff_sub3=" + encodeURIComponent(ad_name) + 
-            "&aff_pub=" + encodeURIComponent(publisher_id);
-
-        // 4. 【核心修改】第一时间触发跳转，不再等待动画
-        window.location.href = finalUrl;
-
-        // 5. 兜底策略：如果浏览器响应较慢，在后台静默切换文字（不阻碍跳转）
-        setTimeout(() => { btn.innerHTML = "Verifying..."; }, 300);
-        setTimeout(() => { btn.innerHTML = "Loading Offer..."; }, 800);
-    }
-</script>
+            // 3. 核心：第一时间发起跳转
+            window.location.href = finalUrl;
+            
+            // 4. 兜底方案：如果 href 响应慢，0.5秒后强制跳转
+            setTimeout(function() {
+                window.location.replace(finalUrl);
+            }, 500);
+        }
+    </script>
 </body>
 </html>
